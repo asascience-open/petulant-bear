@@ -23,11 +23,7 @@ This file is part of  Petulant Bear.
 @description Definition of static strings and functions for creating NCML from a NetCDF4
 Dataset object.
 '''
-
-from netCDF4 import Dataset
-from netCDF4 import Group
-from netCDF4 import Variable
-from netCDF4 import Dimension
+from __future__ import unicode_literals
 
 import io
 
@@ -53,7 +49,7 @@ XMLNS = 'xmlns'
 NAMESPACE = 'http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'
 # TODO: Figure out how to re-add utf-8 encoding when using utf-8 encoded string
 # and etree
-HEADER      = '''<?xml version="1.0"?>'''
+HEADER      = ''''''
 
 # common types...
 type_map = {
@@ -77,6 +73,11 @@ inverse_type_map = {
     'double': numpy.float64,
     'char': str,
 }
+
+try:
+    bs = basestring
+except NameError:
+    bs = str
 
 
 def sanitize(string, spaces=True):
@@ -119,7 +120,7 @@ def parse_att(output, att, indent):
     """
     att is a tuple: (name, value)
     """
-    if isinstance(att[1], str):
+    if isinstance(att[1], bs):
         outputStr = '''{indent}<{attribute} {name}="{attname}" {value}="{attvalue}"/>\n'''.format(
             indent=indent,
             attribute=ATTRIBUTE,
