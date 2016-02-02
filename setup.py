@@ -23,9 +23,9 @@ setup(
     license='GPLv3',
     keywords='netcdf lxml xml metadata ncml',
     packages= ['petulantbear'],
+    tests_require = ['pytest'],
     install_requires = [
             'netCDF4>=1.0.0',
-            'nose>=1.2.0',
             'numpy>=1.7.0',
             'lxml>=3.2.1',
             ],

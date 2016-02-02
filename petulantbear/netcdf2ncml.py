@@ -23,128 +23,129 @@ This file is part of  Petulant Bear.
 @description Definition of static strings and functions for creating NCML from a NetCDF4
 Dataset object.
 '''
+from __future__ import unicode_literals
 
-from netCDF4 import Dataset
-from netCDF4 import Group
-from netCDF4 import Variable
-from netCDF4 import Dimension
-
-import StringIO
+import io
 
 import numpy
 
-NETCDF      = u'netcdf'
-VARIABLE    = u'variable'
-DIMENSION   = u'dimension'
-ATTRIBUTE   = u'attribute'
-GROUP       = u'group'
-VALUES      = u'values'
+NETCDF = 'netcdf'
+VARIABLE = 'variable'
+DIMENSION = 'dimension'
+ATTRIBUTE = 'attribute'
+GROUP = 'group'
+VALUES = 'values'
 
-NAME        = u'name'
-SHAPE       = u'shape'
-LENGTH      = u'length'
-ISUNLIMITED = u'isUnlimited'
-VALUE       = u'value'
-TYPE        = u'type'
+NAME = 'name'
+SHAPE = 'shape'
+LENGTH = 'length'
+ISUNLIMITED = 'isUnlimited'
+VALUE = 'value'
+TYPE = 'type'
 
-NCML        = u'ncml'
-LOCATION    = u'location'
-XMLNS       = u'xmlns'
-NAMESPACE   = u'http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'
+NCML = 'ncml'
+LOCATION = 'location'
+XMLNS = 'xmlns'
+NAMESPACE = 'http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'
 # TODO: Figure out how to re-add utf-8 encoding when using utf-8 encoded string
 # and etree
-HEADER      = u'''<?xml version="1.0"?>'''
+HEADER      = ''''''
 
 # common types...
 type_map = {
-    numpy.int8      : u'byte',
-    numpy.int16     : u'short',
-    numpy.int32     : u'int',
-    numpy.int64     : u'long',
-    numpy.float32   : u'float',
-    numpy.float64   : u'double',
-    numpy.string_   : u'char',
+    numpy.int8: 'byte',
+    numpy.int16: 'short',
+    numpy.int32: 'int',
+    numpy.int64: 'long',
+    numpy.float32: 'float',
+    numpy.float64: 'double',
+    numpy.string_: 'char',
     # This is weak sauuce... type(str) == type !
-    type(str)       : u'char'
-    }
+    type(str): 'char'
+}
 
 inverse_type_map = {
-    u'byte'      : numpy.int8,
-    u'short'     : numpy.int16,
-    u'int'       : numpy.int32,
-    u'long'      : numpy.int64,
-    u'float'     : numpy.float32,
-    u'double'    : numpy.float64,
-    u'char'      : unicode,
-    }
+    'byte': numpy.int8,
+    'short': numpy.int16,
+    'int': numpy.int32,
+    'long': numpy.int64,
+    'float': numpy.float32,
+    'double': numpy.float64,
+    'char': str,
+}
+
+try:
+    bs = basestring
+except NameError:
+    bs = str
 
 
-def sanitize(string,spaces=True):
-    string = string.replace('"','&quote;')
-    string = string.replace('&','&amp;')
+def sanitize(string, spaces=True):
+    string = string.replace('"', '&quote;')
+    string = string.replace('&', '&amp;')
 
-    if spaces is True: string = string.replace(' ','_')
-    string = string.replace('<','&lt;')
-    string = string.replace('>','&gt;')
+    if spaces is True:
+        string = string.replace(' ', '_')
+    string = string.replace('<', '&lt;')
+    string = string.replace('>', '&gt;')
 
     return string
 
+
 def parse_dim(output, dim, indent):
     if dim.isunlimited():
-        output.write(u'''{indent}<{dimension} {name}="{dimname}" {length}="{dimlen}" {isunlimited}="true"/>\n'''.format(
-            indent = indent,
+        output.write('''{indent}<{dimension} {name}="{dimname}" {length}="{dimlen}" {isunlimited}="true"/>\n'''.format(
+            indent=indent,
             dimension=DIMENSION,
             name=NAME,
             dimname=sanitize(dim._name),
             length=LENGTH,
             dimlen=len(dim),
             isunlimited=ISUNLIMITED
-            )
+        )
         )
     else:
-        output.write(u'''{indent}<{dimension} {name}="{dimname}" {length}="{dimlen}"/>\n'''.format(
-            indent = indent,
+        output.write('''{indent}<{dimension} {name}="{dimname}" {length}="{dimlen}"/>\n'''.format(
+            indent=indent,
             dimension=DIMENSION,
             name=NAME,
             dimname=sanitize(dim._name),
             length=LENGTH,
             dimlen=len(dim)
-            )
         )
+        )
+
 
 def parse_att(output, att, indent):
     """
     att is a tuple: (name, value)
     """
-    if isinstance(att[1],(str,unicode)):
-        outputStr = u'''{indent}<{attribute} {name}="{attname}" {value}="{attvalue}"/>\n'''.format(
-            indent = indent,
+    if isinstance(att[1], bs):
+        outputStr = '''{indent}<{attribute} {name}="{attname}" {value}="{attvalue}"/>\n'''.format(
+            indent=indent,
             attribute=ATTRIBUTE,
             name=NAME,
-            attname=sanitize(att[0],spaces=False),
+            attname=sanitize(att[0], spaces=False),
             value=VALUE,
             attvalue=sanitize(att[1])
-            )
-        if u'We have created a bathymetric digital elevation model' in att[1]:
-            print(att[1])
-            foo = StringIO.StringIO()
+        )
+        if 'We have created a bathymetric digital elevation model' in att[1]:
+            foo = io.StringIO()
             foo.write(outputStr)
         output.write(outputStr)
     else:
-
         att_type = type_map.get(type(att[1]), 'unknown')
-        output.write(u'''{indent}<{attribute} {name}="{attname}" {type}="{att_type}" {value}="{attvalue}"/>\n'''.format(
-            indent = indent,
+        output.write('''{indent}<{attribute} {name}="{attname}" {type}="{att_type}" {value}="{attvalue}"/>\n'''.format(
+            indent=indent,
             attribute=ATTRIBUTE,
             name=NAME,
             attname=sanitize(att[0]),
             type=TYPE,
-            att_type = att_type,
+            att_type=att_type,
             value=VALUE,
             attvalue=att[1]
-            )
         )
-
+        )
 
 
 def parse_var(output, var, indent):
@@ -155,123 +156,113 @@ def parse_var(output, var, indent):
         vtype = var.dtype
 
     if len(var.ncattrs()) == 0:
-            output.write(u'''{indent}<{variable} {name}="{varname}" {shape}="{vardims}" {type}="{vartype}"/>\n'''.format(
-                indent = indent,
-                variable=VARIABLE,
-                name=NAME,
-                varname=sanitize(unicode(var._name)),
-                shape=SHAPE,
-                vardims=' '.join([sanitize(unicode(dname)) for dname in var.dimensions]),
-                type=TYPE,
-                vartype = type_map.get(vtype,'unknown'),
-                )
-            )
+        output.write('''{indent}<{variable} {name}="{varname}" {shape}="{vardims}" {type}="{vartype}"/>\n'''.format(
+            indent=indent,
+            variable=VARIABLE,
+            name=NAME,
+            varname=sanitize(str(var._name)),
+            shape=SHAPE,
+            vardims=' '.join([sanitize(str(dname))
+                              for dname in var.dimensions]),
+            type=TYPE,
+            vartype=type_map.get(vtype, 'unknown'),
+        )
+        )
     else:
-        output.write(u'''{indent}<{variable} {name}="{varname}" {shape}="{vardims}" {type}="{vartype}">\n'''.format(
-                indent = indent,
-                variable=VARIABLE,
-                name=NAME,
-                varname=sanitize(var._name),
-                shape=SHAPE,
-                vardims=' '.join([sanitize(unicode(dname))
-                                  for dname in var.dimensions]),
-                type=TYPE,
-                vartype = type_map.get(vtype,'unknown'),
-                )
-            )
+        output.write('''{indent}<{variable} {name}="{varname}" {shape}="{vardims}" {type}="{vartype}">\n'''.format(
+            indent=indent,
+            variable=VARIABLE,
+            name=NAME,
+            varname=sanitize(var._name),
+            shape=SHAPE,
+            vardims=' '.join([sanitize(str(dname))
+                              for dname in var.dimensions]),
+            type=TYPE,
+            vartype=type_map.get(vtype, 'unknown'),
+        )
+        )
 
         new_indent = indent + '  '
 
         for attname in var.ncattrs():
             parse_att(output,
-                      (unicode(attname), unicode(var.getncattr(attname))),
+                      (str(attname), str(var.getncattr(attname))),
                       new_indent)
 
-        output.write(u'''{}</{}>\n'''.format(indent,VARIABLE))
+        output.write('''{}</{}>\n'''.format(indent, VARIABLE))
 
 
 def parse_group(output, group, indent):
 
-    output.write(u'''{indent}<{group} {name}="{groupname}">\n'''.format(
-            indent = indent,
-            group=GROUP,
-            name=NAME,
-            groupname=sanitize(unicode(group.path).split('/')[-1]),
-            )
-        )
+    output.write('''{indent}<{group} {name}="{groupname}">\n'''.format(
+        indent=indent,
+        group=GROUP,
+        name=NAME,
+        groupname=sanitize(str(group.path).split('/')[-1]),
+    )
+    )
 
     new_indent = indent + '  '
 
-    for dim in group.dimensions.values():
+    for dim in list(group.dimensions.values()):
         parse_dim(output, dim, new_indent)
 
     for attname in group.ncattrs():
-        parse_att(output,(attname,group.getncattr(attname)), new_indent)
+        parse_att(output, (attname, group.getncattr(attname)), new_indent)
 
-
-    for var in group.variables.values():
+    for var in list(group.variables.values()):
         parse_var(output, var, new_indent)
 
-    output.write(u'''{}</{}>\n'''.format(indent,GROUP))
+    output.write('''{}</{}>\n'''.format(indent, GROUP))
 
 
-
-def dataset2ncml_buffer(dataset,output,url=None):
+def dataset2ncml_buffer(dataset, output, url=None):
 
     if url is None:
-        output.write(u'''{header}\n<{netcdf} {xmlns}="{namespace}">\n'''.format(
-                header=HEADER,
-                netcdf=NETCDF,
-                xmlns=XMLNS,
-                namespace=NAMESPACE,
-                location=LOCATION,
-                url = url
-                )
-            )
+        output.write('''{header}\n<{netcdf} {xmlns}="{namespace}">\n'''.format(
+            header=HEADER,
+            netcdf=NETCDF,
+            xmlns=XMLNS,
+            namespace=NAMESPACE,
+            location=LOCATION,
+            url=url
+        )
+        )
     else:
-        output.write(u'''{header}\n<{netcdf} {xmlns}="{namespace}" {location}="{url}">\n'''.format(
-                header=HEADER,
-                netcdf=NETCDF,
-                xmlns=XMLNS,
-                namespace=NAMESPACE,
-                location=LOCATION,
-                url = url
-                )
-            )
+        output.write('''{header}\n<{netcdf} {xmlns}="{namespace}" {location}="{url}">\n'''.format(
+            header=HEADER,
+            netcdf=NETCDF,
+            xmlns=XMLNS,
+            namespace=NAMESPACE,
+            location=LOCATION,
+            url=url
+        )
+        )
 
     indent = '  '
-    for dim in dataset.dimensions.values():
+    for dim in list(dataset.dimensions.values()):
         parse_dim(output, dim, indent)
 
     for attname in dataset.ncattrs():
-        parse_att(output, (unicode(attname),
-                           unicode(dataset.getncattr(attname))),
+        parse_att(output, (str(attname),
+                           str(dataset.getncattr(attname))),
                   indent)
 
-    for var in dataset.variables.values():
+    for var in list(dataset.variables.values()):
         parse_var(output, var, indent)
 
-    for group in dataset.groups.values():
-        parse_group(output,group, indent)
+    for group in list(dataset.groups.values()):
+        parse_group(output, group, indent)
 
-
-    output.write(u'''</{}>\n'''.format(NETCDF))
-
+    output.write('''</{}>\n'''.format(NETCDF))
 
 
 def dataset2ncml(dataset, url=None):
-    retval=''
-    output = StringIO.StringIO()
+    retval = ''
+    output = io.StringIO()
     try:
-        dataset2ncml_buffer(dataset,output,url)
+        dataset2ncml_buffer(dataset, output, url)
         retval = output.getvalue()
     finally:
         output.close()
     return retval
-
-
-
-
-
-
-
