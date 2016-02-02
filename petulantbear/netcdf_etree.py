@@ -72,7 +72,7 @@ class AttrProxy(object):
         return self._attrib_obj.__deepcopy__()
 
     def __getitem__(self, key):
-        return self._attrib_obj[key]
+        return self._attrib_obj.get(key)
 
     def __bool__(self):
         return self._attrib_obj.__bool__()
@@ -116,9 +116,8 @@ class AttrProxy(object):
 
 class NcDimAttrib(AttrProxy):
 
-    def __init__(self, nc_element, attrib_obj):
-        self._nc_element = nc_element
-        self._nc_obj = nc_element_nc_obj
+    def __init__(self, attrib_obj):
+        self._nc_obj = attrib_obj._nc_obj
 
         super(NcDimAttrib, self).__init__(attrib_obj)
 
@@ -160,9 +159,8 @@ class NcDimAttrib(AttrProxy):
 
 class NcGrpAttrib(AttrProxy):
 
-    def __init__(self, nc_element, attrib_obj):
-        self._nc_element = nc_element
-        self._nc_obj = nc_element._nc_obj
+    def __init__(self, attrib_obj):
+        self._nc_obj = attrib_obj._nc_obj
 
         super(NcGrpAttrib, self).__init__(attrib_obj)
 
@@ -197,9 +195,8 @@ class NcGrpAttrib(AttrProxy):
 
 class NcVarAttrib(AttrProxy):
 
-    def __init__(self, nc_element, attrib_obj):
-        self._nc_element = nc_element
-        self._nc_obj = nc_element._nc_obj
+    def __init__(self, attrib_obj):
+        self._nc_obj = attrib_obj._nc_obj
 
         super(NcVarAttrib, self).__init__(attrib_obj)
 
@@ -242,9 +239,8 @@ class NcVarAttrib(AttrProxy):
 
 class NcAttrAttrib(AttrProxy):
 
-    def __init__(self, nc_element, attrib_obj):
-        self._nc_element = nc_element
-        self._nc_obj = nc_element._nc_obj
+    def __init__(self, attrib_obj):
+        self._nc_obj = attrib_obj._nc_obj
 
         super(NcAttrAttrib, self).__init__(attrib_obj)
 
