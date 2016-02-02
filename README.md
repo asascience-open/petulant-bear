@@ -1,3 +1,6 @@
+![build_status](https://travis-ci.org/ioos/petulant-bear.svg?branch=master)
+
+
 petulant-bear
 =============
 COPYRIGHT 2013 RPS ASA
