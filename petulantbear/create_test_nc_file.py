@@ -72,7 +72,7 @@ def add_vars_to_grp(grp,types, **kwargs):
     
     for num,type in enumerate(types):    
         default_name = 'var{}'.format(num+5)
-        print default_name
+        print(default_name)
         v = grp.createVariable(kwargs.get(default_name,default_name),type, (dim4._name,))
         try:
             v[:] = numpy.iinfo(type).max

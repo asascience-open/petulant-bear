@@ -25,9 +25,9 @@ a lxml tree which allows the user to query and modify a NetCDF4 dataset using th
 interface.
 '''
 
-import StringIO
+import io
 from lxml import etree
-from netcdf2ncml import *
+from .netcdf2ncml import *
 
 namespaces = {NCML:NAMESPACE}
 
@@ -81,28 +81,28 @@ class AttrProxy(object):
         return self._attrib_obj.get(key, default=default)
 
     def keys(self):
-        return self._attrib_obj.keys()
+        return list(self._attrib_obj.keys())
 
     def __iter__(self):
         return self._attrib_obj.__iter__()
 
     def iterkeys(self):
-        return self._attrib_obj.iterkeys()
+        return iter(self._attrib_obj.keys())
 
     def values(self):
-        return self._attrib_obj.values()
+        return list(self._attrib_obj.values())
 
     def itervalues(self):
-        return self._attrib_obj.itervalues()
+        return iter(self._attrib_obj.values())
 
     def items(self):
-        return self._attrib_obj.items()
+        return list(self._attrib_obj.items())
 
     def iteritems(self):
-        return self._attrib_obj.iteritems()
+        return iter(self._attrib_obj.items())
 
     def has_key(self, key):
-        return self._attrib_obj.has_key(key)
+        return key in self._attrib_obj
 
     def __contains__(self, key):
         return self._attrib_obj.__contains__(key)
@@ -243,7 +243,7 @@ class NcAttrAttrib(AttrProxy):
             current_type = type(nc_object.getncattr(current_attr_name))
             try:
                 new_value = current_type(value)
-            except ValueError, TypeError:
+            except ValueError as TypeError:
                 raise NetcdfEtreeException('''Can not cast the new value "{}" (type: {}) of the attribute "{}" to the current type "{}"'''.format(value, type(value), current_attr_name, current_type))
             nc_object.setncattr(current_attr_name, new_value)
         elif key == TYPE:
@@ -255,13 +255,13 @@ class NcAttrAttrib(AttrProxy):
 
             try:
                 new_value = new_type(current_value)
-            except ValueError, TypeError:
+            except ValueError as TypeError:
                 raise NetcdfEtreeException('''Can not cast the current value "{}" (type: {}) of the attribute "{}" to the new type "{}"'''.format(current_value, type(current_value), current_attr_name, new_type))
 
             nc_object.setncattr(current_attr_name, new_value)
 
             # Make sure to change the representation of the value to be consistent with the new type
-            super(NcAttrAttrib, self).__setitem__(VALUE, unicode(new_value))
+            super(NcAttrAttrib, self).__setitem__(VALUE, str(new_value))
 
         else:
             raise NetcdfEtreeException('''The key "{}" is not part of the schema for NcML Attributes'''.format(key))
@@ -438,7 +438,7 @@ def parse_nc_dataset_as_etree(dataset):
     parser.set_element_class_lookup(NetCDFLookup())
 
     xml_etree = None
-    output = StringIO.StringIO()
+    output = io.StringIO()
     try:
         dataset2ncml_buffer(dataset,output)
         output.seek(0)
