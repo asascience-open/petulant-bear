@@ -1,8 +1,8 @@
-try:
-    from setuptools import setup, find_packages
-    packages = find_packages()
-except ImportError:
-    from distutils import setup
+from setuptools import setup
+
+with open('requirements.txt') as f:
+    require = f.readlines()
+install_requires = [r.strip() for r in require]
 
 setup(
     name='petulant-bear',
@@ -22,9 +22,9 @@ setup(
     ],
     license='GPLv3',
     keywords='netcdf lxml xml metadata ncml',
-    packages= ['petulantbear'],
-    tests_require = ['pytest'],
-    install_requires = [
+    packages=['petulantbear'],
+    tests_require=['pytest'],
+    install_requires=[
             'netCDF4>=1.0.0',
             'numpy>=1.7.0',
             'lxml>=3.2.1',
