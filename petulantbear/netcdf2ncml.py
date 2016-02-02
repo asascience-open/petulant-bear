@@ -130,12 +130,10 @@ def parse_att(output, att, indent):
             attvalue=sanitize(att[1])
         )
         if 'We have created a bathymetric digital elevation model' in att[1]:
-            print((att[1]))
             foo = io.StringIO()
             foo.write(outputStr)
         output.write(outputStr)
     else:
-
         att_type = type_map.get(type(att[1]), 'unknown')
         output.write('''{indent}<{attribute} {name}="{attname}" {type}="{att_type}" {value}="{attvalue}"/>\n'''.format(
             indent=indent,
