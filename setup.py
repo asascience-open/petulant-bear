@@ -6,7 +6,7 @@ install_requires = [r.strip() for r in require]
 
 setup(
     name='petulant-bear',
-    version='0.1.3',
+    version='0.2.0',
     description='Presents etree interface to netcdf4-python objects using NCML data model',
     author='David Stuebe',
     author_email='DStuebe@ASAScience.com',
